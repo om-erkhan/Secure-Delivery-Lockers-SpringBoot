@@ -32,7 +32,7 @@ public class Locker {
     private Instant createdAt = Instant.now();
 
     @OneToMany(mappedBy = "locker", fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonIgnoreProperties("locker")
     private List<LockerSlot> lockerSlots;
 
 

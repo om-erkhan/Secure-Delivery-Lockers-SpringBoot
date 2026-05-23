@@ -57,6 +57,8 @@ public class LockerReservation {
     @Column(name = "parcel_picked_at")
     private Instant parcelPickedAt;
 
+
+
     @Column(name = "expires_at")
     private Instant expiresAt;
 

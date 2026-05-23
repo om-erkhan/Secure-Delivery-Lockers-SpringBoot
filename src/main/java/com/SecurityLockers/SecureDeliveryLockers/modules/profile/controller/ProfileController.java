@@ -32,7 +32,23 @@ public class ProfileController {
         }
     }
 
+    @GetMapping("/get-profile")
+    public ResponseEntity<?> getProfile() {
+        try {
+            UserProfile profile = profileService.getProfile();
+            return ResponseBuilder.success(profile, "Profile fetched successfully!");
+        } catch (Exception e) {
+            return ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 
-
-
+    @PostMapping(value = "/update-profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateProfile(@ModelAttribute CreateProfileDto dto) {
+        try {
+            UserProfile profile = profileService.updateProfile(dto);
+            return ResponseBuilder.success(profile, "Profile updated successfully!");
+        } catch (Exception e) {
+            return ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 }

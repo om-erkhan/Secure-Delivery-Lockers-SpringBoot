@@ -85,4 +85,14 @@ public class LockerController {
             return ResponseBuilder.error(HttpStatus.UNAUTHORIZED, e.getMessage());
         }
     }
+
+    @PostMapping("/cancel-reservation/{reservationId}")
+    public ResponseEntity<?> cancelReservation(@PathVariable("reservationId") UUID reservationId) {
+        try {
+            lockerService.cancelReservation(reservationId);
+            return ResponseBuilder.success(null, "Reservation Cancelled Successfully");
+        } catch (Exception e) {
+            return ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 }

@@ -4,21 +4,17 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+### IDEs ###
+.idea/
 *.iml
+*.iws
 *.ipr
-src/main/resources/application.properties
+.vscode/
+.settings/
+.classpath
+.project
+.factorypath
+*.class
 
 ### NetBeans ###
 /nbproject/private/
@@ -36,3 +32,5 @@ build/
 # Firebase
 /serviceAccountKey.json
 
+# Environments
+.env

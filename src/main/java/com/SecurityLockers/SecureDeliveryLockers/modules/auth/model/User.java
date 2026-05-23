@@ -45,6 +45,7 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("user")
+    @ToString.Exclude
     private UserProfile userProfile;
 
 

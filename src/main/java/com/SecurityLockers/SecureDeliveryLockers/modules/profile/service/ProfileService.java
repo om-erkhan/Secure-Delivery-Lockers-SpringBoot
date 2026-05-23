@@ -72,4 +72,33 @@ public class ProfileService {
         userRepository.save(user);
         return profileRepository.save(profile);
     }
+
+    public UserProfile getProfile() throws Exception {
+        User user = authUtils.getCurrentUser();
+        return profileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Profile not found for this user."));
+    }
+
+    public UserProfile updateProfile(CreateProfileDto dto) throws Exception {
+        User user = authUtils.getCurrentUser();
+        UserProfile profile = profileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Profile not found for this user."));
+
+        if (dto.getFullName() != null) profile.setFullName(dto.getFullName());
+        if (dto.getPhoneNumber() != null) profile.setPhoneNumber(dto.getPhoneNumber());
+        if (dto.getAddress() != null) profile.setAddress(dto.getAddress());
+        if (dto.getCity() != null) profile.setCity(dto.getCity());
+        if (dto.getState() != null) profile.setState(dto.getState());
+
+        if (dto.getProfileImage() != null && !dto.getProfileImage().isEmpty()) {
+            try {
+                fileUploadProducer.queueProfileImageUpload(dto.getProfileImage(), user.getId());
+                log.info("Profile image update queued for user: {}", user.getId());
+            } catch (Exception e) {
+                log.error("Failed to queue profile image update: {}", e.getMessage(), e);
+            }
+        }
+
+        return profileRepository.save(profile);
+    }
 }

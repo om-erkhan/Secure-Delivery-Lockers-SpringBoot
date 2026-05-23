@@ -1,4 +1,5 @@
 package com.SecurityLockers.SecureDeliveryLockers.modules.auth.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,6 +34,7 @@ public class UserProfile {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @JsonIgnoreProperties("userProfile")
+    @JsonIgnore
+    @ToString.Exclude
     private User user;
 }

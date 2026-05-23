@@ -256,6 +256,27 @@ public class LockerService {
          return lockerReservationRepository.findByUserId(currentUser.getId());
     }
 
+    @Transactional
+    public void cancelReservation(UUID reservationId) throws Exception {
+        User currentUser = authUtils.getCurrentUser();
+        LockerReservation reservation = lockerReservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reservation not found."));
 
+        if (!reservation.getUserId().equals(currentUser.getId())) {
+            throw new RuntimeException("Unauthorized to cancel this reservation.");
+        }
 
+        if (reservation.getStatus() != LockerReservation.ReservationStatus.ACTIVE) {
+            throw new RuntimeException("Only active reservations can be cancelled.");
+        }
+
+        reservation.setStatus(LockerReservation.ReservationStatus.CANCELLED);
+        LockerSlot slot = reservation.getLockerSlot();
+        slot.setStatus(LockerSlot.Status.FREE);
+        
+        lockerSlotRepository.save(slot);
+        lockerReservationRepository.save(reservation);
+        
+        log.info("Reservation {} cancelled by user {}", reservationId, currentUser.getId());
+    }
 }

@@ -26,7 +26,7 @@ public class LockerSlot {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "locker_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnoreProperties("lockerSlots")
     private Locker locker;
 
     @Column(name = "slot_number",nullable = false)

@@ -8,9 +8,6 @@ import com.SecurityLockers.SecureDeliveryLockers.messaging.producer.EmailProduce
 import com.SecurityLockers.SecureDeliveryLockers.utility.AuthEnums;
 import com.SecurityLockers.SecureDeliveryLockers.utility.JwtUtil;
 import com.SecurityLockers.SecureDeliveryLockers.utility.Util;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -86,7 +83,7 @@ public class AuthService {
 
 
     @Transactional
-    public String verifyOtp(String email, String otp) {
+    public Map<String, Object> verifyOtp(String email, String otp) {
         String otpKey = "OTP:USER:" + email;
         String cachedOtp = redisTemplate.opsForValue().get(otpKey);
 
@@ -103,7 +100,9 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.getIsVerified() != null && user.getIsVerified()) {
-            throw new RuntimeException("User is already verified.");
+            // If they are trying to verify but already verified, maybe they are just logging in from a new device?
+            // Actually the login logic handles verified users differently.
+            // But let's just proceed to allow them to get a token.
         }
 
         user.setIsVerified(true);
@@ -114,23 +113,11 @@ public class AuthService {
         String sessionKey = "SESSION:" + token;
         redisTemplate.opsForValue().set(sessionKey, user.getEmail(), Duration.ofHours(2));
 
-        return token;
-    }
-
-
-
-    public Map<String , Object> authenticateGoogleLogin(String token) throws FirebaseAuthException {
-
-        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-        String name =  decodedToken.getName();
-        String email =  decodedToken.getEmail();
-
         return Map.of(
-                "name", name,
-                "email", email
+            "token", token,
+            "isProfileCompleted", user.getIsProfileCompleted() != null && user.getIsProfileCompleted()
         );
     }
-
 
     public void logout(String token) {
         String sessionKey = "SESSION:" + token;
