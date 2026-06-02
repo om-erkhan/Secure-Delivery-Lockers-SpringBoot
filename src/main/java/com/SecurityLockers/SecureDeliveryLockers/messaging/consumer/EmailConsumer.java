@@ -20,6 +20,20 @@ public class EmailConsumer {
         try {
             log.info("Consuming email message for: {}", emailMessage.getTo());
             
+            // Print a prominent log containing the email details so they are visible in Render logs
+            log.info("=================================================");
+            log.info("📬 DEVELOPER EMAIL LOG - FALLBACK DISPLAY");
+            log.info("To: {}", emailMessage.getTo());
+            log.info("Subject: {}", emailMessage.getSubject());
+            log.info("Content: {}", emailMessage.getBody());
+            if (emailMessage.getUserOtp() != null) {
+                log.info("User OTP: {}", emailMessage.getUserOtp());
+            }
+            if (emailMessage.getDeliveryOtp() != null) {
+                log.info("Delivery OTP: {}", emailMessage.getDeliveryOtp());
+            }
+            log.info("=================================================");
+
             // Handle different email types
             switch (emailMessage.getEmailType()) {
                 case OTP_REGISTRATION:
@@ -61,9 +75,8 @@ public class EmailConsumer {
             
             log.info("Email sent successfully to: {}", emailMessage.getTo());
         } catch (Exception e) {
-            log.error("Failed to send email to {}: {}", emailMessage.getTo(), e.getMessage(), e);
-            // In production, you might want to send to a dead-letter queue
-            throw new RuntimeException("Failed to process email message", e);
+            log.error("Failed to send email to {} (likely due to Render SMTP port blocks): {}", emailMessage.getTo(), e.getMessage());
+            log.warn("Swallowing connection exception to prevent RabbitMQ infinite retry loops.");
         }
     }
 }
