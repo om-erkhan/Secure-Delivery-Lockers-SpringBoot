@@ -36,7 +36,6 @@ public class AuthService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-
     public AuthResponse login(RegisterRequestDTO dto) {
         Optional<User> optionalUser = authRepository.findByEmail(dto.getEmail());
         int otp = Util.generateUniqueOtp();
@@ -50,7 +49,12 @@ public class AuthService {
                 String otpKey = "OTP:USER:" + user.getEmail();
                 redisTemplate.opsForValue().set(otpKey, String.valueOf(otp), Duration.ofMinutes(5));
                 emailProducer.sendOtpEmail(user.getEmail(), String.valueOf(otp));
-                return new AuthResponse(null, "User exists but not verified. Please verify OTP.", AuthEnums.OTP_REQUIRED);
+                
+                // Update user OTP to avoid unique constraint violations
+                user.setOtp(otp);
+                authRepository.save(user);
+                
+                return new AuthResponse(null, "User exists but not verified. Please verify OTP. (Test OTP: " + otp + ")", AuthEnums.OTP_REQUIRED);
             }
             if (user.getIsProfileCompleted() == false) {
                 String token = jwtUtil.generateToken(user.getEmail());
@@ -70,13 +74,14 @@ public class AuthService {
                     .email(dto.getEmail())
                     .password(hashedPassword)
                     .isVerified(false)
+                    .otp(otp) // Set generated OTP to avoid constraint violation
                     .build();
             authRepository.save(newUser);
 
             String otpKey = "OTP:USER:" + newUser.getEmail();
             redisTemplate.opsForValue().set(otpKey, String.valueOf(otp), Duration.ofMinutes(5));
             emailProducer.sendOtpEmail(dto.getEmail(), String.valueOf(otp));
-            return new AuthResponse(null, "Otp sent to your email. Please verify.", AuthEnums.OTP_SENT);
+            return new AuthResponse(null, "Otp sent to your email. Please verify. (Test OTP: " + otp + ")", AuthEnums.OTP_SENT);
 
         }
     }
