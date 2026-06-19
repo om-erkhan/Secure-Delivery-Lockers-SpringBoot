@@ -25,7 +25,7 @@ public class EmailProducer {
             log.info("Email message sent successfully to queue for: {}", emailMessage.getTo());
         } catch (Exception e) {
             log.error("Failed to send email message to queue: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to queue email message", e);
+            // Swallow exception to prevent rolling back critical locker operations
         }
     }
 

@@ -71,9 +71,28 @@ public class LockerController {
 
     @PostMapping("/open-locker")
     public ResponseEntity<?> openLocker(@RequestBody Map<String, Object> payload) {
-        Integer otp = (Integer) payload.get("otp");
-        LockerReservation locker = lockerService.openLocker(otp);
-        return ResponseBuilder.success(locker, "Opened Successfully");
+        Object otpObj = payload.get("otp");
+        if (otpObj == null) {
+            return ResponseBuilder.error(HttpStatus.BAD_REQUEST, "OTP is required");
+        }
+        
+        Integer otp;
+        if (otpObj instanceof Number) {
+            otp = ((Number) otpObj).intValue();
+        } else {
+            try {
+                otp = Integer.parseInt(otpObj.toString().trim());
+            } catch (NumberFormatException e) {
+                return ResponseBuilder.error(HttpStatus.BAD_REQUEST, "Invalid OTP format");
+            }
+        }
+        
+        try {
+            LockerReservation locker = lockerService.openLocker(otp);
+            return ResponseBuilder.success(locker, "Opened Successfully");
+        } catch (Exception ex) {
+            return ResponseBuilder.error(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
     }
 
     @GetMapping("/get-reservations")
